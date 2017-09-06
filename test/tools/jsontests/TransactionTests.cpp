@@ -26,12 +26,15 @@
 #include <test/tools/libtestutils/Common.h>
 #include <test/tools/libtesteth/TestHelper.h>
 #include <test/tools/fuzzTesting/fuzzHelper.h>
+#include <boost/filesystem/path.hpp>
 #include <string>
 
 using namespace std;
 using namespace json_spirit;
 using namespace dev;
 using namespace dev::eth;
+
+namespace fs = boost::filesystem;
 
 namespace dev {  namespace test {
 
@@ -189,10 +192,11 @@ public:
 			fileCount *= 2; //tests are checked when filled and after they been filled
 
 		auto testOutput = dev::test::TestOutputHelper(fileCount);
+		dev::test::AccessSwitch const accessSwitch = test::Options::get().filltests ? dev::test::AccessSwitch::Writable : dev::test::AccessSwitch::ReadOnly;
 		for (auto const& file: files)
 		{
 			test::TestOutputHelper::setCurrentTestFileName(file.filename().string());
-			test::executeTests(file.filename().string(), "/TransactionTests/"+_folder, "/TransactionTestsFiller/"+_folder, dev::test::doTransactionTests);
+			test::executeTests(file.filename().string(), {fs::path("TransactionTests") / fs::path(_folder), accessSwitch}, fs::path("TransactionTestsFiller") / fs::path(_folder), dev::test::doTransactionTests);
 		}
 	}
 
